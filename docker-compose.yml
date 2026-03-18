@@ -1,0 +1,30 @@
+version: "3.9"
+
+services:
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: userid_api
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./static:/app/static
+    env_file:
+      - .env
+    environment:
+      - MONGO_URI=mongodb://admin:Scot12345!@206.162.244.135:27017/ScotDB?authSource=admin
+      - DB_NAME=ScotDB
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    networks:
+      - userid_network
+
+networks:
+  userid_network:
+    driver: bridge
