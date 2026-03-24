@@ -87,6 +87,8 @@ REQUIREMENTS:
     )
 
     raw = response.choices[0].message.content.strip()
+
+    # Parse the JSON response
     try:
         module = json.loads(raw)
     except json.JSONDecodeError as e:
