@@ -1,10 +1,11 @@
 # app/services/quiz_generator_service.py
 import json
 import secrets
-from typing import List, Dict, Any
+from typing import List, Dict, Any, Optional
 from openai import AsyncOpenAI
 from fastapi import HTTPException, status
 from app.database.database import settings
+from app.services.embedding_service import retrieve_context
 
 
 def generate_question_id() -> str:
@@ -13,7 +14,11 @@ def generate_question_id() -> str:
     return f"QUZ-{random_hex}"
 
 
-async def generate_quiz_questions(course_data: dict) -> List[Dict[str, Any]]:
+async def generate_quiz_questions(
+    course_data: dict,
+    knowledge_bases: Optional[List[str]] = None,
+    user_instration: Optional[str] = None,
+) -> List[Dict[str, Any]]:
     """
     Generate 10 quiz questions based on course lecture data using OpenAI.
     
@@ -50,11 +55,21 @@ async def generate_quiz_questions(course_data: dict) -> List[Dict[str, Any]]:
             content_summary += f"  Summary: {topic_data.get('summary', '')}\n"
             content_summary += f"  Details: {topic_data.get('detailed_explanation', '')}\n\n"
 
+    instruction_block = f"\nUser Instruction:\n{user_instration}\n" if user_instration else ""
+    rag_query = f"Quiz questions for {course_name} covering key concepts"
+    rag_context = await retrieve_context(
+        query=rag_query,
+        knowledge_bases=knowledge_bases,
+        top_k=6,
+        max_chars=3500,
+    )
+    context_block = f"\nReference Context (from PDFs):\n{rag_context}\n" if rag_context else ""
+
     prompt = f"""You are an expert quiz creator for educational courses.
 
 Based on the following course content, create 10 multiple-choice quiz questions that test understanding of the key concepts.
 
-{content_summary}
+{content_summary}{instruction_block}{context_block}
 
 Generate EXACTLY 10 quiz questions in the following JSON format:
 

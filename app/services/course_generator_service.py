@@ -3,6 +3,7 @@ import json
 from openai import AsyncOpenAI
 from fastapi import HTTPException, status
 from app.database.database import settings
+from app.services.embedding_service import retrieve_context
 
 
 async def generate_single_module(course_data: dict, module_number: int) -> dict:
@@ -20,11 +21,25 @@ async def generate_single_module(course_data: dict, module_number: int) -> dict:
     subject = course_data.get("subject", "")
     grade_level = course_data.get("target_grade_level", "")
 
+    user_instration = course_data.get("user_instration")
+    knowledge_bases = course_data.get("knowledge_bases", [])
+    rag_query = f"Module {module_number} content for {course_name} ({subject}) for {grade_level}"
+    rag_context = await retrieve_context(
+        query=rag_query,
+        knowledge_bases=knowledge_bases,
+        top_k=8,
+        max_chars=5000,
+    )
+
+
+    instruction_block = f"\nUser Instruction:\n{user_instration}\n" if user_instration else ""
+    context_block = f"\nReference Context (from PDFs):\n{rag_context}\n" if rag_context else ""
+
     prompt = f"""You are an expert academic curriculum designer.
 
 Create module {module_number} of {total_modules} for: {course_name} ({subject})
 Target Level: {grade_level}
-
+{instruction_block}{context_block}
 Generate a module with the following JSON structure:
 
 {{

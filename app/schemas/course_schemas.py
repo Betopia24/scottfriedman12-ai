@@ -1,6 +1,6 @@
 # app/schemas/course_schemas.py
 from datetime import datetime
-from typing import Optional
+from typing import Optional, List
 from pydantic import BaseModel, Field
 
 
@@ -21,6 +21,14 @@ class CourseInput(BaseModel):
     mastery_requirement: float = Field(..., ge=0, le=100, description="Mastery requirement percentage (0-100)")
     total_modules: int = Field(..., ge=1, description="Total number of modules")
     estimated_duration_min_per_class: int = Field(..., ge=1, description="Estimated duration in minutes per class")
+    knowledge_bases: Optional[List[str]] = Field(
+        default=None,
+        description="List of knowledge base IDs or PDF URLs to use for RAG",
+    )
+    user_instration: Optional[str] = Field(
+        default=None,
+        description="User instruction to guide content generation",
+    )
 
     class Config:
         json_schema_extra = {
@@ -41,6 +49,8 @@ class CourseInput(BaseModel):
                 "mastery_requirement": 80.0,
                 "total_modules": 12,
                 "estimated_duration_min_per_class": 45,
+                "knowledge_bases": ["KB-0ABE710095DA"],
+                "user_instration": "You are an expert teacher. Make it easy to understand.",
             }
         }
 

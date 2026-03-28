@@ -20,6 +20,7 @@ router = APIRouter(
 QUIZ_QUESTION_COLLECTION = "Quiz_question"
 QUIZ_ANSWER_COLLECTION = "Quiz_answer"
 LECTURE_COLLECTION = "Course_lecture_generator"
+COURSE_COLLECTION = "course_name_generator"
 
 
 @router.post("/generate", response_model=GenerateQuizResponse)
@@ -44,6 +45,11 @@ async def generate_quiz(input_data: GenerateQuizInput):
             detail=f"No course lecture found for session_id: {input_data.unique_session_id}"
         )
     
+    course_config = await db[COURSE_COLLECTION].find_one(
+        {"unique_session_id": input_data.unique_session_id},
+        {"_id": 0},
+    )
+
     # Check if quiz already exists for this session and user
     existing_quiz = await db[QUIZ_QUESTION_COLLECTION].find_one(
         {
@@ -79,7 +85,11 @@ async def generate_quiz(input_data: GenerateQuizInput):
         )
     
     # Generate quiz questions using OpenAI
-    questions = await generate_quiz_questions(lecture_doc)
+    questions = await generate_quiz_questions(
+        lecture_doc,
+        knowledge_bases=(course_config or {}).get("knowledge_bases"),
+        user_instration=(course_config or {}).get("user_instration"),
+    )
     
     # Save questions to database
     quiz_documents = []

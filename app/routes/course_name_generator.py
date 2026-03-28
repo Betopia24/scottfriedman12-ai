@@ -11,6 +11,7 @@ from app.schemas.course_schemas import (
     GetCourseSessionResponse,
 )
 from app.services.course_name_generator import generate_course_name
+from app.services.embedding_service import retrieve_context
 
 router = APIRouter(
     prefix="/course",
@@ -57,6 +58,16 @@ async def generate_course(payload: CourseInput):
 
     # ── 2. Generate course name via OpenAI GPT-4.1 ────────────────────────
     try:
+        rag_query = (
+            f"Course title for {payload.course_name} in {payload.subject} "
+            f"for {payload.target_grade_level}"
+        )
+        rag_context = await retrieve_context(
+            query=rag_query,
+            knowledge_bases=payload.knowledge_bases,
+            top_k=6,
+            max_chars=3000,
+        )
         generated_name = await generate_course_name(
             course_name=payload.course_name,
             subject=payload.subject,
@@ -65,6 +76,8 @@ async def generate_course(payload: CourseInput):
             semester_count=payload.semester_count,
             total_modules=payload.total_modules,
             estimated_duration_min_per_class=payload.estimated_duration_min_per_class,
+            user_instration=payload.user_instration,
+            rag_context=rag_context,
         )
     except Exception as e:
         raise HTTPException(
@@ -97,6 +110,8 @@ async def generate_course(payload: CourseInput):
         "mastery_requirement": payload.mastery_requirement,
         "total_modules": payload.total_modules,
         "estimated_duration_min_per_class": payload.estimated_duration_min_per_class,
+        "knowledge_bases": payload.knowledge_bases or [],
+        "user_instration": payload.user_instration,
         "generated_course_name": generated_name,
         "total_number_created": total_number_created,
         "created_at": created_at,

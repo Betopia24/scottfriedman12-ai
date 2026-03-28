@@ -8,6 +8,8 @@ class Settings(BaseSettings):
     MONGO_URI: str
     DB_NAME: str
     OPENAI_API_KEY: Optional[str] = None  # Optional so existing .env doesn't break
+    EMBEDDING_MODEL: Optional[str] = None
+    VECTOR_INDEX_NAME: Optional[str] = None
 
     class Config:
         env_file = ".env"
@@ -67,6 +69,17 @@ async def connect_db():
     print("✅ Compound unique index on Quiz_answer ensured.")
     await quiz_answer_collection.create_index("unique_user_id")
     print("✅ Index on 'unique_user_id' in Quiz_answer ensured.")
+
+    # ——— Knowledge base embeddings ———
+    kb_collection = db_instance.db["knowledge_bases"]
+    await kb_collection.create_index("kb_id", unique=True)
+    await kb_collection.create_index("source_url")
+    print("✅ Indexes on knowledge_bases ensured.")
+
+    rag_collection = db_instance.db["rag_chunks"]
+    await rag_collection.create_index([("kb_id", 1), ("chunk_index", 1)], unique=True)
+    await rag_collection.create_index("kb_id")
+    print("✅ Indexes on rag_chunks ensured.")
 
 
 async def close_db():

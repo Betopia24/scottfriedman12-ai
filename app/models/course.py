@@ -1,6 +1,6 @@
 # app/models/course.py
 from datetime import datetime
-from typing import Optional
+from typing import Optional, List
 from pydantic import BaseModel, Field
 
 
@@ -23,6 +23,8 @@ class CourseModel(BaseModel):
     total_modules: int
     estimated_duration_min_per_class: int
     generated_course_name: str
+    knowledge_bases: Optional[List[str]] = None
+    user_instration: Optional[str] = None
     created_at: datetime = Field(default_factory=datetime.utcnow)
 
     class Config:

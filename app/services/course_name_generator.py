@@ -14,13 +14,18 @@ async def generate_course_name(
     semester_count: int,
     total_modules: int,
     estimated_duration_min_per_class: int,
+    user_instration: str | None = None,
+    rag_context: str | None = None,
 ) -> str:
     """
     Uses OpenAI GPT-4.1 to generate a compelling, structured course title
     based on the provided course details.
     """
 
-    prompt = f"""You are an expert academic curriculum designer. 
+    instruction_block = f"\nUser Instruction:\n{user_instration}\n" if user_instration else ""
+    context_block = f"\nReference Context (from PDFs):\n{rag_context}\n" if rag_context else ""
+
+    prompt = f"""You are an expert academic curriculum designer.
 Based on the following course details, generate one compelling, clear, and professional course title.
 
 Course Details:
@@ -31,11 +36,11 @@ Course Details:
 - Semester Count: {semester_count}
 - Total Modules: {total_modules}
 - Estimated Duration: {estimated_duration_min_per_class} minutes per class
-
+{instruction_block}{context_block}
 Rules:
 - The title must be engaging and descriptive.
 - Keep it under 12 words.
-- Do NOT include quotes, explanations, or extra text — only return the course title itself.
+- Do NOT include quotes, explanations, or extra text -- only return the course title itself.
 """
 
     response = await client.chat.completions.create(
