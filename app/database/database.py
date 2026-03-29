@@ -10,6 +10,8 @@ class Settings(BaseSettings):
     OPENAI_API_KEY: Optional[str] = None  # Optional so existing .env doesn't break
     EMBEDDING_MODEL: Optional[str] = None
     VECTOR_INDEX_NAME: Optional[str] = None
+    COURSE_ASSISTANT_BASE_URL: Optional[str] = None
+    COURSE_ASSISTANT_CONTEXT_TOKEN: Optional[str] = None
 
     class Config:
         env_file = ".env"
