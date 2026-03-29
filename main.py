@@ -8,6 +8,7 @@ from app.database import connect_db, close_db
 from app.routes.user_id import router as user_id_router
 from app.routes.course_name_generator import router as course_router
 from app.routes.course_lecture import router as course_lecture_router
+from app.routes.course_assistant import router as course_assistant_router
 from app.routes.quiz import router as quiz_router
 from app.routes.embeddings import router as embeddings_router
 
@@ -61,6 +62,7 @@ app.mount("/audio", StaticFiles(directory=str(AUDIO_DIR)), name="audio")
 app.include_router(user_id_router, prefix="/api/v1")
 app.include_router(course_router, prefix="/api/v1")
 app.include_router(course_lecture_router, prefix="/api/v1")
+app.include_router(course_assistant_router, prefix="/api/v1")
 app.include_router(quiz_router, prefix="/api/v1")
 app.include_router(embeddings_router, prefix="/api/v1")
 
