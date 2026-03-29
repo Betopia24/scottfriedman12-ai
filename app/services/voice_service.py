@@ -20,7 +20,7 @@ from app.database.database import settings
 #
 # ACCESS IN PRODUCTION:
 #   URL: http://your-domain.com/audio/{session_id}/module_{n}.mp3
-#   Example: http://localhost:8000/audio/SES-ABC123/module_1.mp3
+#   Example: http://localhost:8003/audio/SES-ABC123/module_1.mp3
 #
 # The static folder is mounted in main.py as:
 #   app.mount("/audio", StaticFiles(directory="static/audio"), name="audio")
